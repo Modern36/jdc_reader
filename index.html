@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Digital Corpus Reader</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://unpkg.com/fuse.js@7.0.0/dist/fuse.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Journal Digital Corpus Reader</h1>
+        <p class="subtitle">Search Swedish historical newsreel transcripts</p>
+    </header>
+
+    <main>
+        <!-- Loading state -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading corpus...</p>
+            <p class="loading-status" id="loading-status"></p>
+        </div>
+
+        <!-- Search interface (hidden until loaded) -->
+        <div id="search-container" class="hidden">
+            <details class="help-section">
+                <summary>About &amp; Help</summary>
+                <div class="help-content">
+                    <p><strong>About:</strong> This tool searches transcripts from Swedish historical newsreels (SF Veckorevy).
+                    The corpus contains two types of transcripts: <em>Speech</em> (automatic speech recognition) and
+                    <em>Intertitle</em> (OCR from silent film text cards).</p>
+
+                    <p><strong>Search:</strong> Enter keywords to search across all transcripts.
+                    Enable <em>Fuzzy</em> search to find approximate matches (useful for OCR/ASR errors like "Stockho1m" matching "Stockholm").</p>
+
+                    <p><strong>Filters:</strong> Narrow results by transcript type, collection (sf, sj, kino, nuet), or year range.
+                    Videos with unknown years are listed under "XXXX".</p>
+
+                    <p><strong>Viewing:</strong> Click a result to see both transcripts side-by-side with timestamps.
+                    Links to the original source files on GitHub are provided in the viewer header.</p>
+
+                    <p><strong>Sharing:</strong> The URL updates as you search, so you can bookmark or share any search or specific video.</p>
+                </div>
+            </details>
+
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search transcripts..." autocomplete="off">
+                <button id="search-btn">Search</button>
+                <label class="fuzzy-toggle"><input type="checkbox" id="fuzzy-search"> Fuzzy</label>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Type:</label>
+                    <label><input type="checkbox" name="type" value="speech" checked> Speech (ASR)</label>
+                    <label><input type="checkbox" name="type" value="intertitle" checked> Intertitle (OCR)</label>
+                </div>
+
+                <div class="filter-group">
+                    <label>Collection:</label>
+                    <div id="collection-filters"></div>
+                </div>
+
+                <div class="filter-group">
+                    <label>Year:</label>
+                    <select id="year-from"><option value="">From</option></select>
+                    <span>to</span>
+                    <select id="year-to"><option value="">To</option></select>
+                </div>
+            </div>
+
+            <div class="results-info">
+                <span id="results-count"></span>
+                <span id="version-info" class="version-info"></span>
+            </div>
+
+            <div id="results" class="results"></div>
+        </div>
+
+        <!-- Transcript viewer modal -->
+        <div id="viewer-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="viewer-title"></h2>
+                    <button class="close-btn" id="close-viewer">&times;</button>
+                </div>
+                <div class="viewer-container">
+                    <div class="transcript-panel" id="intertitle-panel">
+                        <h3>Intertitle (OCR)</h3>
+                        <div class="transcript-content" id="intertitle-content">
+                            <p class="no-content">No intertitle transcript</p>
+                        </div>
+                    </div>
+                    <div class="transcript-panel" id="speech-panel">
+                        <h3>Speech (ASR)</h3>
+                        <div class="transcript-content" id="speech-content">
+                            <p class="no-content">No speech transcript</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Data from <a href="https://zenodo.org/records/15596191">Journal Digital Corpus</a> |
+           <a href="https://modernatider1936.se">Modern Times 1936</a> |
+           Reader v<span id="app-version"></span></p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
