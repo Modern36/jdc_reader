@@ -1,10 +1,15 @@
 // Journal Digital Corpus Reader
 // Client-side SPA for searching Swedish newsreel transcripts
 
-const APP_VERSION = '2025.11.22';
+const APP_VERSION = '2025.12.31';
 
 // Corpus versions - add new versions here
 const CORPUS_VERSIONS = {
+    '2025.12.30.2': {
+        doi: '10.5281/zenodo.17340776',
+        url: 'https://zenodo.org/api/records/18093888/files/Modern36/journal_digital_corpus-2025.12.30.2.zip/content',
+        date: '2025-10-13'
+    },
     '2025.10.13': {
         doi: '10.5281/zenodo.17340776',
         url: 'https://zenodo.org/api/records/17340776/files/Modern36/journal_digital_corpus-2025.10.13.zip/content',
@@ -17,7 +22,7 @@ const CORPUS_VERSIONS = {
     }
 };
 
-const DEFAULT_CORPUS_VERSION = '2025.10.13';
+const DEFAULT_CORPUS_VERSION = '2025.12.30.2';
 let currentVersion = DEFAULT_CORPUS_VERSION;
 
 
@@ -435,7 +440,27 @@ function createSnippet(text, matches, term, maxLength = 200) {
 
 // Render search results
 function renderResults() {
-    resultsCount.textContent = `${currentResults.length} videos found`;
+    // Count total hits across all videos
+    let totalHits = 0;
+    if (searchTerm) {
+        for (const video of currentResults) {
+            if (video._matches) {
+                // Fuzzy search - count Fuse.js matches
+                totalHits += video._matches.reduce((sum, match) => sum + (match.indices?.length || 0), 0);
+            } else {
+                // Exact search - count occurrences of search term
+                const speechText = video.speech?.text.toLowerCase() || '';
+                const intertitleText = video.intertitle?.text.toLowerCase() || '';
+                const combinedText = speechText + ' ' + intertitleText;
+                const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                const matches = combinedText.match(regex);
+                totalHits += matches ? matches.length : 0;
+            }
+        }
+        resultsCount.textContent = `${totalHits} hits across ${currentResults.length} videos found`;
+    } else {
+        resultsCount.textContent = `${currentResults.length} videos found`;
+    }
 
     if (currentResults.length === 0) {
         resultsEl.innerHTML = '<p class="no-content">No results found</p>';
